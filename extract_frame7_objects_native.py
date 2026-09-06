@@ -6,6 +6,7 @@ row-for-row with {split}_float16.npy. The 7th of 13 uniformly sampled frames
 is decoded from each mp4 at native resolution and detected at --imgsz
 (default 1280). Output dict format matches extract_frame7_objects.py.
 """
+
 import argparse
 import json
 import re
@@ -21,10 +22,10 @@ ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from models.common import DetectMultiBackend  # noqa: E402
-from utils.augmentations import letterbox  # noqa: E402
-from utils.general import check_img_size, non_max_suppression, scale_boxes  # noqa: E402
-from utils.torch_utils import select_device  # noqa: E402
+from models.common import DetectMultiBackend
+from utils.augmentations import letterbox
+from utils.general import check_img_size, non_max_suppression, scale_boxes
+from utils.torch_utils import select_device
 
 try:
     from tqdm import tqdm
@@ -58,8 +59,7 @@ def split_videos(metadata, split):
     subjects = set(metadata["split_subjects"][split])
     excluded = set(metadata.get("excluded_actions") or [])
     videos = sorted(
-        p for p in src.glob("P*/**/*.mp4")
-        if action_id(p) not in excluded and p.relative_to(src).parts[0] in subjects
+        p for p in src.glob("P*/**/*.mp4") if action_id(p) not in excluded and p.relative_to(src).parts[0] in subjects
     )
     labels = [metadata["class_to_idx"][action_id(p)] for p in videos]
     rel = [str(p.relative_to(src)) for p in videos]
@@ -120,8 +120,7 @@ def main():
         im = im.half() if model.fp16 else im.float()
         im /= 255.0
         pred = model(im, augment=False, visualize=False)
-        pred = non_max_suppression(pred, args.conf_thres, args.iou_thres,
-                                   classes=class_ids.tolist(), max_det=300)
+        pred = non_max_suppression(pred, args.conf_thres, args.iou_thres, classes=class_ids.tolist(), max_det=300)
         for k, det in enumerate(pred):
             if det is None or len(det) == 0:
                 continue
@@ -133,8 +132,7 @@ def main():
                 if slot is None or conf <= confidence[si, slot]:
                     continue
                 presence[si, slot] = 1
-                center_xyz[si, slot] = (((xyxy[0] + xyxy[2]) * 0.5) / w,
-                                        ((xyxy[1] + xyxy[3]) * 0.5) / h, 0.0)
+                center_xyz[si, slot] = (((xyxy[0] + xyxy[2]) * 0.5) / w, ((xyxy[1] + xyxy[3]) * 0.5) / h, 0.0)
                 confidence[si, slot] = conf
 
     buf_frames, buf_idx = [], []
@@ -173,9 +171,14 @@ def main():
     out.parent.mkdir(parents=True, exist_ok=True)
     np.save(out, payload, allow_pickle=True)
     meta = {
-        "output": str(out), "split": args.split, "weights": str(Path(args.weights).resolve()),
-        "imgsz": imgsz, "conf_thres": args.conf_thres, "iou_thres": args.iou_thres,
-        "num_videos": total, "failures": failures,
+        "output": str(out),
+        "split": args.split,
+        "weights": str(Path(args.weights).resolve()),
+        "imgsz": imgsz,
+        "conf_thres": args.conf_thres,
+        "iou_thres": args.iou_thres,
+        "num_videos": total,
+        "failures": failures,
         "elapsed_sec": round(time.time() - t0, 1),
     }
     out.with_suffix(".metadata.json").write_text(json.dumps(meta, indent=2))
