@@ -10,10 +10,10 @@ ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from models.common import DetectMultiBackend  # noqa: E402
-from utils.augmentations import letterbox  # noqa: E402
-from utils.general import check_img_size, non_max_suppression, scale_boxes  # noqa: E402
-from utils.torch_utils import select_device  # noqa: E402
+from models.common import DetectMultiBackend
+from utils.augmentations import letterbox
+from utils.general import check_img_size, non_max_suppression, scale_boxes
+from utils.torch_utils import select_device
 
 try:
     from tqdm import tqdm
@@ -140,7 +140,7 @@ def main():
     nc = len(names)
     if nc == 80:
         # Legacy stock-COCO weights: person (0) plus household-object range 31..79.
-        class_ids = np.array([0] + list(range(31, 80)), dtype=np.int64)
+        class_ids = np.array([0, *list(range(31, 80))], dtype=np.int64)
     else:
         # Custom model (e.g. coco_custom50): its classes are already the wanted set.
         class_ids = np.arange(nc, dtype=np.int64)
